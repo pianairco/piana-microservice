@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>sample-parent</artifactId>
+        <groupId>ir.piana.dev</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>http-sample</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>ir.piana.dev</groupId>
+            <artifactId>microservice-util</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>ir.piana.dev</groupId>
+            <artifactId>microservice-grizzly-http-server</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>ir.piana.dev</groupId>
+            <artifactId>user-module</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/oracle/ojdbc6 -->
+        <!--<dependency>-->
+            <!--<groupId>oracle</groupId>-->
+            <!--<artifactId>ojdbc6</artifactId>-->
+            <!--<version>11.2.0.3</version>-->
+        <!--</dependency>-->
+        <!-- https://mvnrepository.com/artifact/org.eclipse.persistence/eclipselink -->
+    </dependencies>
+</project>
