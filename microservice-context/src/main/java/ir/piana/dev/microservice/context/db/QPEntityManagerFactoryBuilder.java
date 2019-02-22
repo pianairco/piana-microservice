@@ -8,6 +8,7 @@ import org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.spi.PersistenceUnitInfo;
 
 /**
  * @author Mohammad Rahmati, 1/22/2019
@@ -93,8 +94,12 @@ public final class QPEntityManagerFactoryBuilder {
                 entityManagerFactoryInfo.getDatabasePlatform()));
         factory.getJpaPropertyMap()
                 .put("eclipselink.weaving", "false");
-        factory.setPersistenceUnitName(entityManagerFactoryInfo.getPersistenceUnitName());
+//        factory.setPersistenceUnitName(entityManagerFactoryInfo.getPersistenceUnitName());
         factory.setPackagesToScan(entityManagerFactoryInfo.getBasePackages());
+
+//        PersistenceUnitInfo persistenceUnitInfo =
+//                persistenceUnitInfo(getClass().getSimpleName())
+
         // This will trigger the creation of the product manager factory
         factory.afterPropertiesSet();
         return factory.getObject();

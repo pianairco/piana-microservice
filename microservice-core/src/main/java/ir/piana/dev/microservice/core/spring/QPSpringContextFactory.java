@@ -48,6 +48,12 @@ public class QPSpringContextFactory {
         return springContext;
     }
 
+    public void refresh() {
+        for(String key : springContextMap.keySet()) {
+            ((QPSpringContextImpl)springContextMap.get(key)).refresh();
+        }
+    }
+
     private static class QPSpringContextImpl
             implements QPSpringContext {
         private AnnotationConfigApplicationContext applicationContext;
@@ -58,8 +64,7 @@ public class QPSpringContextFactory {
 //            this.applicationContext.refresh();
         }
 
-        @Override
-        public void refresh() {
+        private void refresh() {
             this.applicationContext.refresh();
         }
 

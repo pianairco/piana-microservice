@@ -21,8 +21,8 @@ public class SampleModule extends QPBaseModule {
         pianaSpringContextFactory
                 .getApplicationContext()
 //                .register(UserRepository.class)
-                .register(QPJpaConfig.class)
-                .refresh();
+                .register(QPJpaConfig.class);
+//                .refresh();
     }
 
     @Override

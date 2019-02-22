@@ -18,8 +18,7 @@
         <database-platform>mysql</database-platform>
         <jpa-provider>eclipselink</jpa-provider>
         <persistence-unit-name>qp-pu</persistence-unit-name>
-        <base-package>ir.piir.piana.dev.microservice.sample.usermodule.entity</base-package>
-        <base-package>ir.piir.piana.dev.microservice.sample.usermodule.repo</base-package>
+        <base-package>ir.piana.dev.microservice.sample.usermodule.entity</base-package>
     </entity-manager-factory>
 
 
