@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * @author Mohammad Rahmati, 2/21/2019
  */
-public class QPPianaSpringContextFactory {
+class QPPianaSpringContextFactory {
 //    private Map<String, AnnotationConfigApplicationContext>
     private Map<String, AnnotationConfigApplicationContext>
             springContextMap;

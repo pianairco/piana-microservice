@@ -1,4 +1,4 @@
-package ir.piana.dev.microservice.context.spring;
+package ir.piana.dev.microservice.core.spring;
 
 import javax.persistence.EntityManagerFactory;
 

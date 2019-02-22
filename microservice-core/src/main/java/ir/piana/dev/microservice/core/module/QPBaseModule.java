@@ -16,7 +16,7 @@ public abstract class QPBaseModule extends QBeanSupport {
     private String inQueue;
     private String outQueue;
 
-    protected QPSpringContextFactory pianaSpringContextFactory =
+    private QPSpringContextFactory pianaSpringContextFactory =
             QPSpringContextFactory.getContextFactory();
 
     @Override

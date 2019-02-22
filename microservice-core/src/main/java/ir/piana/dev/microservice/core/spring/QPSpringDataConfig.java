@@ -1,4 +1,4 @@
-package ir.piana.dev.microservice.context.spring;
+package ir.piana.dev.microservice.core.spring;
 
 import ir.piana.dev.microservice.core.module.QPBaseModule;
 import org.springframework.orm.jpa.JpaTransactionManager;

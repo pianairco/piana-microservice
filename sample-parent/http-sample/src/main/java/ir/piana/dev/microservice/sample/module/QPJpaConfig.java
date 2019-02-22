@@ -1,6 +1,6 @@
 package ir.piana.dev.microservice.sample.module;
 
-import ir.piana.dev.microservice.context.spring.QPSpringDataConfig;
+import ir.piana.dev.microservice.core.spring.QPSpringDataConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AdviceMode;
