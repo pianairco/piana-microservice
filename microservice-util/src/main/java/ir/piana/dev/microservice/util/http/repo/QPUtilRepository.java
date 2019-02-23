@@ -1,5 +1,6 @@
 package ir.piana.dev.microservice.util.http.repo;
 
+import ir.piana.dev.microservice.context.http.QPHttpRepository;
 import ir.piana.dev.microservice.context.module.QPStaticResourceResolverModule;
 import ir.piana.dev.microservice.context.staticresource.QPStaticResource;
 import ir.piana.dev.microservice.core.http.QPHttpException;
@@ -10,8 +11,8 @@ import ir.piana.dev.microservice.core.module.QPBaseModule;
 /**
  * @author Mohammad Rahmati, 2/17/2019
  */
-public class QPUtilRepository {
-    public QPHttpHandler staticResourceHandler = (config, springContext, request, response) -> {
+public class QPUtilRepository extends QPHttpRepository {
+    public QPHttpHandler staticResourceHandler = (config, request, response) -> {
         String moduleName = config.getValue("static-resolver-module-name");
         QPStaticResource staticResource = null;
         try {

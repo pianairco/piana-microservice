@@ -25,8 +25,14 @@ public class QPHttpPrototypeRepositoryManager
             Field field = repositoryConstruct.getaClass()
                     .getDeclaredField(handlerName);
             if (QPHttpHandler.class.isAssignableFrom(field.getType())) {
+
+                QPHttpRepository repository = (QPHttpRepository)repositoryConstruct
+                        .getaClass().newInstance();
+                repository.springBeanProvider =
+                        repositoryConstruct.getSpringBeanProvider();
+
                 QPHttpHandler handler = (QPHttpHandler) field
-                        .get(repositoryConstruct.getaClass().newInstance());
+                        .get(repository);
                 return handler;
             }
         } catch (NoSuchFieldException e) {

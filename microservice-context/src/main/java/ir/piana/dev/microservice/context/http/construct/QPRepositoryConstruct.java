@@ -1,10 +1,13 @@
 package ir.piana.dev.microservice.context.http.construct;
 
+import ir.piana.dev.microservice.core.module.QPSpringBeanProvider;
+
 /**
  * @author Mohammad Rahmati, 2/16/2019
  */
 public class QPRepositoryConstruct {
     private String name;
+    private QPSpringBeanProvider springBeanProvider;
     private Class aClass;
     private String scope;
     private Object singletonInstance;
@@ -42,5 +45,13 @@ public class QPRepositoryConstruct {
 
     public void setSingletonInstance(Object singletonInstance) {
         this.singletonInstance = singletonInstance;
+    }
+
+    public QPSpringBeanProvider getSpringBeanProvider() {
+        return springBeanProvider;
+    }
+
+    public void setSpringBeanProvider(QPSpringBeanProvider springBeanProvider) {
+        this.springBeanProvider = springBeanProvider;
     }
 }

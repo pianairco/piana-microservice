@@ -18,6 +18,7 @@
 
     <!-- scope: singleton, prototype -->
     <qp-repository name="p1"
+                   spring-context="default"
                    scope="singleton"
                    class="ir.piana.dev.microservice.sample.HelloWorld"/>
 

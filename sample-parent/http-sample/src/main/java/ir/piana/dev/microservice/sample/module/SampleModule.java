@@ -18,11 +18,8 @@ public class SampleModule extends QPBaseModule {
 
     @Override
     protected void configForSpringContext() throws Exception {
-        pianaSpringContextFactory
-                .getApplicationContext()
-//                .register(UserRepository.class)
+        getSpringContext()
                 .register(QPJpaConfig.class);
-//                .refresh();
     }
 
     @Override

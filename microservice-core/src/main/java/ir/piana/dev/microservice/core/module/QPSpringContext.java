@@ -1,12 +1,10 @@
-package ir.piana.dev.microservice.core.spring;
+package ir.piana.dev.microservice.core.module;
 
 /**
  * @author Mohammad Rahmati, 2/19/2019
  */
-public interface QPSpringContext {
+public interface QPSpringContext extends QPSpringBeanProvider {
 //    void refresh();
     <T> QPSpringContext register(Class<T> beanClass);
     <T> QPSpringContext registerBean(String beanName, Class<T> beanClass);
-    <T> T getBean(String beanName, Class<T> beanClass);
-    <T> T getBean(Class<T> beanClass);
 }

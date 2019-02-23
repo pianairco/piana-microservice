@@ -19,11 +19,8 @@ public class UserModule extends QPBaseModule {
 
     @Override
     protected void configForSpringContext() throws Exception {
-        pianaSpringContextFactory
-                .getApplicationContext()
-//                .register(UserRepository.class)
+        getSpringContext()
                 .register(SpringConfig.class);
-//                .refresh();
     }
 
     @Override

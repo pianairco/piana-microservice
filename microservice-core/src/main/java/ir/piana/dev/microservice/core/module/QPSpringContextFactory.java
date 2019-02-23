@@ -1,15 +1,18 @@
-package ir.piana.dev.microservice.core.spring;
+package ir.piana.dev.microservice.core.module;
 
-import org.springframework.beans.factory.config.BeanDefinitionCustomizer;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.io.Resource;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Mohammad Rahmati, 2/21/2019
  */
-public class QPSpringContextFactory {
+class QPSpringContextFactory {
     private Map<String, QPSpringContext>
             springContextMap;
 
@@ -35,11 +38,11 @@ public class QPSpringContextFactory {
         return contextFactory;
     }
 
-    public QPSpringContext getApplicationContext(){
-        return this.getApplicationContext("default");
+    public QPSpringContext getSpringContext(){
+        return this.getSpringContext("default");
     }
 
-    public QPSpringContext getApplicationContext(String contextName){
+    public QPSpringContext getSpringContext(String contextName){
         if (springContextMap.containsKey(contextName))
             return springContextMap.get(contextName);
         QPSpringContextImpl springContext = new QPSpringContextImpl(
@@ -48,10 +51,48 @@ public class QPSpringContextFactory {
         return springContext;
     }
 
-    public void refresh() {
-        for(String key : springContextMap.keySet()) {
-            ((QPSpringContextImpl)springContextMap.get(key)).refresh();
+    static void refreshAll() {
+        for (String contextName :
+                getContextFactory().springContextMap.keySet()) {
+            getContextFactory().refresh(contextName);
         }
+    }
+
+    static void refreshAll(Map<String, List<String>> contextResourceMap) {
+        for (String contextName :
+                getContextFactory().springContextMap.keySet()) {
+            List<String> resourceNames = contextResourceMap.get(contextName);
+            if(resourceNames != null && !resourceNames.isEmpty())
+                getContextFactory().refresh(contextName, resourceNames);
+            else
+                getContextFactory().refresh(contextName);
+        }
+    }
+
+    private void refresh(String contextName) {
+        QPSpringContextImpl springContext =
+                (QPSpringContextImpl)this.getSpringContext(contextName);
+//        GenericApplicationContext createdContext =
+//                new GenericApplicationContext(springContext.applicationContext);
+        Resource resource = springContext.applicationContext
+                .getResource("file:./applicationContext.xml");
+        XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(
+                springContext.applicationContext);
+        int i = reader.loadBeanDefinitions(resource);
+        springContext.refresh();
+    }
+
+    private void refresh(String contextName, List<String> resourceNames) {
+        QPSpringContextImpl springContext =
+                (QPSpringContextImpl)this.getSpringContext(contextName);
+        for(String resourceName : resourceNames) {
+            Resource resource = springContext.applicationContext
+                    .getResource("file:./" + resourceName + ".xml");
+            XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(
+                    springContext.applicationContext);
+            int i = reader.loadBeanDefinitions(resource);
+        }
+        springContext.refresh();
     }
 
     private static class QPSpringContextImpl

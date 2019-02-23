@@ -1,5 +1,5 @@
 <qbean name="http-service-mapper"
-       class="ir.piana.dev.microservice.context.module.QPHttpServiceMapperModule"
+       class="ir.piana.dev.microservice.context.http.QPHttpServiceMapperModule"
        logger="Q2">
     <property name="qp-space" value="tspace:default" />
     <property name="qp-in" value="qp-http-request-multiplexor-module-in" />
@@ -8,9 +8,11 @@
     <qp-spring-context>default</qp-spring-context>
 
     <qp-repository name="p1"
+                   spring-context="default"
                    scope="singleton"
                    class="ir.piana.dev.microservice.sample.HelloWorld"/>
     <qp-repository name="p2"
+                   spring-context="default"
                    scope="singleton"
                    class="ir.piana.dev.microservice.util.http.repo.QPUtilRepository"/>
 

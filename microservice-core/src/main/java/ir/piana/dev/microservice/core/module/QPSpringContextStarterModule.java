@@ -1,11 +1,12 @@
-package ir.piana.dev.microservice.core.spring;
+package ir.piana.dev.microservice.core.module;
 
-import ir.piana.dev.microservice.core.module.QPBaseModule;
+import org.jdom2.Attribute;
 import org.jdom2.Element;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class QPSpringContextStarterModule
         extends QPBaseModule {
@@ -14,11 +15,21 @@ public final class QPSpringContextStarterModule
 //    private List<String> configPackageList;
 //    private AnnotationConfigApplicationContext springContext;
 
+    Map<String, List<String>> contextResourceMap = new LinkedHashMap<>();
+
     @Override
     protected void configBeforeRegisterQPModule()
             throws Exception {
-//        List<Element> configBeanElements = getPersist()
-//                .getChildren("config-bean");
+        List<Element> contextResourceElements = getPersist()
+                .getChildren("spring-context-xml-resource");
+        for (Element e : contextResourceElements) {
+            String contextName = e.getAttributeValue("context-name");
+            String resourceName = e.getAttributeValue("resource-name");
+            if(!contextResourceMap.containsKey(contextName)) {
+                contextResourceMap.put(contextName, new ArrayList<>());
+            }
+            contextResourceMap.get(contextName).add(resourceName);
+        }
 //        configBeanList = new ArrayList<>();
 //        configBeanElements.parallelStream().forEach(element -> {
 //            try {
@@ -68,9 +79,11 @@ public final class QPSpringContextStarterModule
 
     @Override
     protected void startQPModule() throws Exception {
-        pianaSpringContextFactory.getApplicationContext()
-                .register(QPSpringConfiguration.class);
-        pianaSpringContextFactory.refresh();
+        QPSpringContextFactory.refreshAll(contextResourceMap);
+//        QPSpringContextFactory.refreshAll();
+//        pianaSpringContextFactory.getApplicationContext()
+//                .register(QPSpringConfiguration.class);
+//        pianaSpringContextFactory.refresh();
     }
 
     @Override

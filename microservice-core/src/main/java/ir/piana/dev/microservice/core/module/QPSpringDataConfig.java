@@ -1,6 +1,5 @@
-package ir.piana.dev.microservice.core.spring;
+package ir.piana.dev.microservice.core.module;
 
-import ir.piana.dev.microservice.core.module.QPBaseModule;
 import org.springframework.orm.jpa.JpaTransactionManager;
 
 import javax.persistence.EntityManagerFactory;

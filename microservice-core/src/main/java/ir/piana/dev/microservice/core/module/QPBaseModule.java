@@ -1,7 +1,6 @@
 package ir.piana.dev.microservice.core.module;
 
 import ir.piana.dev.microservice.core.QPException;
-import ir.piana.dev.microservice.core.spring.QPSpringContextFactory;
 import org.jpos.q2.QBeanSupport;
 import org.jpos.space.LocalSpace;
 import org.jpos.space.Space;
@@ -15,6 +14,7 @@ public abstract class QPBaseModule extends QBeanSupport {
     private String spaceName;
     private String inQueue;
     private String outQueue;
+    private String springContextName;
 
     private QPSpringContextFactory pianaSpringContextFactory =
             QPSpringContextFactory.getContextFactory();
@@ -33,6 +33,7 @@ public abstract class QPBaseModule extends QBeanSupport {
         }
         inQueue = cfg.get("qp-in", defaultQueue.concat("in"));
         outQueue = cfg.get("qp-out", defaultQueue.concat("out"));
+        springContextName = cfg.get("spring-context", "default");
         space = SpaceFactory.getSpace(spaceName);
         configBeforeRegisterQPModule();
         initBeforeRegisterQPModule();
@@ -61,6 +62,16 @@ public abstract class QPBaseModule extends QBeanSupport {
     protected final void destroyService()
             throws Exception {
         destroyQPModule();
+    }
+
+    protected QPSpringContext getSpringContext() {
+        return pianaSpringContextFactory
+                .getSpringContext(springContextName);
+    }
+
+    protected QPSpringContext getSpringContext(String springContextName) {
+        return pianaSpringContextFactory
+                .getSpringContext(springContextName);
     }
 
     protected abstract void configBeforeRegisterQPModule() throws Exception;

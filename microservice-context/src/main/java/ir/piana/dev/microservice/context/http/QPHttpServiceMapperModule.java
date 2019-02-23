@@ -1,7 +1,8 @@
-package ir.piana.dev.microservice.context.module;
+package ir.piana.dev.microservice.context.http;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import ir.piana.dev.microservice.context.http.QPHttpRepository;
 import ir.piana.dev.microservice.core.QPException;
 import ir.piana.dev.microservice.core.http.*;
 import ir.piana.dev.microservice.core.module.QPBaseModule;
@@ -9,7 +10,7 @@ import ir.piana.dev.microservice.context.http.QPHttpRepositoryManagerBuilder;
 import ir.piana.dev.microservice.context.http.construct.QPHandlerConstruct;
 import ir.piana.dev.microservice.context.http.construct.QPRepositoryConstruct;
 import ir.piana.dev.microservice.context.http.util.QPHttpInjectableConfigImpl;
-import ir.piana.dev.microservice.core.spring.QPSpringContext;
+import org.jdom2.Element;
 import org.jpos.q2.QBean;
 import org.jpos.space.SpaceListener;
 import org.jpos.transaction.Context;
@@ -37,7 +38,6 @@ public class QPHttpServiceMapperModule
     protected static Gson gson;
 
     protected String springContextName;
-    protected QPSpringContext springContext;
 
     static {
         GsonBuilder builder = new GsonBuilder();
@@ -46,34 +46,71 @@ public class QPHttpServiceMapperModule
 
     @Override
     protected void configBeforeRegisterQPModule() throws Exception {
-        springContextName = getPersist().getChildText("qp-spring-context");
+        /*springContextName = getPersist().getChildText("qp-spring-context");
         springContextName = springContextName == null ?
                 "default" : springContextName;
 
-        getPersist().getChildren("qp-repository")
-                .parallelStream().forEach(repoElement -> {
+        for(Element repoElement :
+                getPersist().getChildren("qp-repository")) {
             try {
                 QPRepositoryConstruct repositoryConstruct = new QPRepositoryConstruct();
                 repositoryConstruct.setName(repoElement.getAttributeValue("name"));
+                repositoryConstruct.setSpringContextName(
+                        repoElement.getAttributeValue("spring-context", "default"));
                 repositoryConstruct.setScope(repoElement
                         .getAttributeValue("scope", "singleton"));
                 Class c = Class.forName(repoElement.getAttributeValue("class"));
                 repositoryConstruct.setaClass(c);
-                repositoryConstruct.setSingletonInstance(c.newInstance());
+                Object o = null;
+                o = c.newInstance();
+                if (o instanceof QPHttpRepository) {
+                    ((QPHttpRepository) o).springBeanProvider = getSpringContext(
+                            repositoryConstruct.getSpringContextName());
+                    repositoryConstruct.setSingletonInstance(o);
+                }
+                else
+                    throw new Exception("repository " +
+                            repositoryConstruct.getName() +
+                            "not implemented QPHttpRepository interface!");
                 repositoryManagerMap.put(repositoryConstruct.getName(),
                         QPHttpRepositoryManagerBuilder.build(repositoryConstruct));
 //                repoMap.put(repoElement.getAttributeValue("name"),
 //                        Class.forName(repoElement.getAttributeValue("class")));
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
             } catch (QPException e) {
                 e.printStackTrace();
             }
-        });
+        }
+
+
+//        getPersist().getChildren("qp-repository")
+//                .parallelStream().forEach(repoElement -> {
+//            try {
+//                QPRepositoryConstruct repositoryConstruct = new QPRepositoryConstruct();
+//                repositoryConstruct.setName(repoElement.getAttributeValue("name"));
+//                repositoryConstruct.setSpringContextName(
+//                        repoElement.getAttributeValue("spring-context", "default"));
+//                repositoryConstruct.setScope(repoElement
+//                        .getAttributeValue("scope", "singleton"));
+//                Class c = Class.forName(repoElement.getAttributeValue("class"));
+//                repositoryConstruct.setaClass(c);
+//                Object o = null;
+//                o = repositoryManager.getClass().newInstance();
+//                if (o instanceof QPHttpRepository)
+//                    repositoryManager.setSingletonInstance(c.newInstance());
+//                else
+//                    throw new Exception("");
+//                repositoryManagerMap.put(repositoryConstruct.getName(),
+//                        QPHttpRepositoryManagerBuilder.build(repositoryConstruct));
+////                repoMap.put(repoElement.getAttributeValue("name"),
+////                        Class.forName(repoElement.getAttributeValue("class")));
+//            } catch (ClassNotFoundException e) {
+//                e.printStackTrace();
+//            } catch (QPException e) {
+//                e.printStackTrace();
+//            }
+//        });
 
         getPersist().getChildren("qp-handler")
                 .parallelStream().forEach(handlerElement -> {
@@ -117,13 +154,11 @@ public class QPHttpServiceMapperModule
                                 .concat(handlerConstruct.getUrl()),
                         handlerConstruct);
             }
-        });
+        });*/
     }
 
     @Override
     protected void initBeforeRegisterQPModule() throws Exception {
-        listener = Executors.newSingleThreadExecutor();
-        worker = Executors.newSingleThreadExecutor();
     }
 
     @Override
@@ -133,14 +168,78 @@ public class QPHttpServiceMapperModule
 
     @Override
     protected void configAfterRegisterQPModule() throws Exception {
+        springContextName = getPersist().getChildText("qp-spring-context");
+        springContextName = springContextName == null ?
+                "default" : springContextName;
 
+        for(Element repoElement :
+                getPersist().getChildren("qp-repository")) {
+            try {
+                QPRepositoryConstruct repositoryConstruct = new QPRepositoryConstruct();
+                repositoryConstruct.setName(repoElement.getAttributeValue("name"));
+                repositoryConstruct.setSpringBeanProvider(
+                        getSpringContext(repoElement.getAttributeValue(
+                                "spring-context", "default")));
+                repositoryConstruct.setScope(repoElement
+                        .getAttributeValue("scope", "singleton"));
+                Class c = Class.forName(repoElement.getAttributeValue("class"));
+                repositoryConstruct.setaClass(c);
+                Object o = c.newInstance();
+                if (o instanceof QPHttpRepository) {
+                    ((QPHttpRepository) o).springBeanProvider =
+                            repositoryConstruct.getSpringBeanProvider();
+                    repositoryConstruct.setSingletonInstance(o);
+                }
+                else
+                    throw new Exception("repository " +
+                            repositoryConstruct.getName() +
+                            "not implemented QPHttpRepository interface!");
+                repositoryManagerMap.put(repositoryConstruct.getName(),
+                        QPHttpRepositoryManagerBuilder.build(repositoryConstruct));
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (QPException e) {
+                e.printStackTrace();
+            }
+        }
+
+        getPersist().getChildren("qp-handler")
+                .parallelStream().forEach(handlerElement -> {
+            QPHandlerConstruct handlerConstruct = new QPHandlerConstruct();
+            String url = handlerElement.getAttributeValue("url");
+            handlerConstruct.setMethod(handlerElement.getAttributeValue("method"));
+            handlerConstruct.setRoles(handlerElement.getAttributeValue("roles"));
+            String repoName = handlerElement.getAttributeValue("repository");
+            handlerConstruct.setRepoManager(repositoryManagerMap.get(repoName));
+            String handlerName = handlerElement.getAttributeValue("handler");
+            handlerConstruct.setHandlerName(handlerName);
+
+            handlerConstruct.setHandlerConfig(QPHttpInjectableConfigImpl
+                    .build(handlerElement.getChildren("property")));
+
+            if (url.contains("**")) {
+                handlerConstruct.setUrl(url.substring(
+                        0, url.indexOf("/**")));
+                httpAsteriskHandlerConstructMap.put(
+                        handlerConstruct.getMethod()
+                                .concat(":")
+                                .concat(url.substring(0, url.indexOf("/**"))),
+                        handlerConstruct);
+            } else {
+                handlerConstruct.setUrl(url);
+                handlerConstructMap.put(
+                        handlerConstruct.getMethod()
+                                .concat(":")
+                                .concat(handlerConstruct.getUrl()),
+                        handlerConstruct);
+            }
+        });
     }
 
     @Override
     protected void initAfterRegisterQPModule() throws Exception {
-//        springContext = QPBaseModule.getModule(
-//                springContextName,
-//                QPSpringContextProviderModule.class);
+        listener = Executors.newSingleThreadExecutor();
+        worker = Executors.newSingleThreadExecutor();
     }
 
     @Override
@@ -241,8 +340,6 @@ public class QPHttpServiceMapperModule
         handlerConstruct.getRepoManager()
                 .resolve(handlerConstruct.getHandlerName())
                 .handle(handlerConstruct.getHandlerConfig(),
-                        pianaSpringContextFactory
-                                .getApplicationContext(springContextName),
                         request, response);
         response.apply();
     }

@@ -4,7 +4,7 @@ import ir.piana.dev.microservice.context.db.ConnectionInfo;
 import ir.piana.dev.microservice.context.db.EntityManagerFactoryInfo;
 import ir.piana.dev.microservice.context.db.QPDataSourceFactory;
 import ir.piana.dev.microservice.context.db.QPEntityManagerFactoryBuilder;
-import ir.piana.dev.microservice.core.spring.QPEntityManagerFactoryProvider;
+import ir.piana.dev.microservice.core.module.QPEntityManagerFactoryProvider;
 import ir.piana.dev.microservice.core.module.QPBaseModule;
 import org.jdom2.Element;
 
