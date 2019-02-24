@@ -5,6 +5,8 @@
     <property name="qp-in" value="qp-http-request-multiplexor-module-in" />
     <property name="qp-will-be-registered" value="true" />
 
+    <qp-authenticator module-name="basic-authenticator" />
+
     <qp-spring-context>default</qp-spring-context>
 
     <qp-repository name="p1"

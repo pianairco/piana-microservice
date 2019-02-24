@@ -1,12 +1,11 @@
-package ir.piana.dev.microservice.sample.usermodule;
+package ir.piana.dev.microservice.sample.useraddress;
 
 import ir.piana.dev.microservice.core.module.QPBaseModule;
-import ir.piana.dev.microservice.sample.usermodule.repo.SpringConfig;
 
 /**
  * @author Mohammad Rahmati, 2/21/2019
  */
-public class UserModule extends QPBaseModule {
+public class UserAddressModule extends QPBaseModule {
     @Override
     protected void configBeforeRegisterQPModule() throws Exception {
 
@@ -19,8 +18,8 @@ public class UserModule extends QPBaseModule {
 
     @Override
     protected void configForSpringContext() throws Exception {
-        getSpringContext()
-                .register(SpringConfig.class);
+//        getSpringContext()
+//                .register();
     }
 
     @Override

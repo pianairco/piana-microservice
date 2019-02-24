@@ -18,7 +18,9 @@
         <database-platform>mysql</database-platform>
         <jpa-provider>eclipselink</jpa-provider>
         <persistence-unit-name>qp-pu</persistence-unit-name>
-        <base-package>ir.piana.dev.microservice.sample.usermodule.entity</base-package>
+        <base-package>ir.piana.dev.microservice.core.authenticate</base-package>
+        <base-package>ir.piana.dev.microservice.sample.useraddress.entity</base-package>
+        <base-package>ir.piana.dev.microservice.module.basicauth.entity</base-package>
     </entity-manager-factory>
 
 

@@ -10,6 +10,11 @@
     <repositories
             entity-manager-factory-ref="QpEntityManagerFactory"
             transaction-manager-ref="QpTransactionManager"
-            base-package="ir.piana.dev.microservice.sample.usermodule.repo" />
+            base-package="ir.piana.dev.microservice.sample.useraddress.repo" />
+
+    <repositories
+            entity-manager-factory-ref="QpEntityManagerFactory"
+            transaction-manager-ref="QpTransactionManager"
+            base-package="ir.piana.dev.microservice.module.basicauth.repo" />
 
 </beans:beans>

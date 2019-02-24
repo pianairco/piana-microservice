@@ -12,7 +12,7 @@ import ir.piana.dev.microservice.core.module.QPBaseModule;
  * @author Mohammad Rahmati, 2/17/2019
  */
 public class QPUtilRepository extends QPHttpRepository {
-    public QPHttpHandler staticResourceHandler = (config, request, response) -> {
+    public QPHttpHandler staticResourceHandler = (principal, config, request, response) -> {
         String moduleName = config.getValue("static-resolver-module-name");
         QPStaticResource staticResource = null;
         try {

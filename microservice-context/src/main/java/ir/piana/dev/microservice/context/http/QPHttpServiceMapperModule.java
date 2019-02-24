@@ -2,14 +2,13 @@ package ir.piana.dev.microservice.context.http;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import ir.piana.dev.microservice.context.http.QPHttpRepository;
-import ir.piana.dev.microservice.core.QPException;
-import ir.piana.dev.microservice.core.http.*;
-import ir.piana.dev.microservice.core.module.QPBaseModule;
-import ir.piana.dev.microservice.context.http.QPHttpRepositoryManagerBuilder;
 import ir.piana.dev.microservice.context.http.construct.QPHandlerConstruct;
 import ir.piana.dev.microservice.context.http.construct.QPRepositoryConstruct;
 import ir.piana.dev.microservice.context.http.util.QPHttpInjectableConfigImpl;
+import ir.piana.dev.microservice.core.QPException;
+import ir.piana.dev.microservice.core.authenticate.QPPrincipal;
+import ir.piana.dev.microservice.core.http.*;
+import ir.piana.dev.microservice.core.module.QPBaseModule;
 import org.jdom2.Element;
 import org.jpos.q2.QBean;
 import org.jpos.space.SpaceListener;
@@ -31,7 +30,8 @@ public class QPHttpServiceMapperModule
     protected Map<String, QPHandlerConstruct> httpAsteriskHandlerConstructMap =
             new LinkedHashMap<>();
 
-    protected QPHttpAuthenticator authenticator;
+//    protected QPHttpAuthenticator authenticator;
+    protected String authenticatorModule;
 
     protected ExecutorService listener;
     protected ExecutorService worker;
@@ -171,6 +171,9 @@ public class QPHttpServiceMapperModule
         springContextName = getPersist().getChildText("qp-spring-context");
         springContextName = springContextName == null ?
                 "default" : springContextName;
+        authenticatorModule = getPersist()
+                .getChild("qp-authenticator")
+                .getAttributeValue("module-name");
 
         for(Element repoElement :
                 getPersist().getChildren("qp-repository")) {
@@ -302,7 +305,11 @@ public class QPHttpServiceMapperModule
                 }
             }
             if(handlerConstruct != null) {
-                invokeHttpHandler(
+                QPPrincipal qpPrincipal = authorizeHttpHandler(
+                        handlerConstruct,
+                        request, response);
+
+                invokeHttpHandler(qpPrincipal,
                         handlerConstruct,
                         request, response);
             } else {
@@ -321,25 +328,30 @@ public class QPHttpServiceMapperModule
         }
     }
 
-//    protected void authorizeHttpHandler(
-//            QPHandlerConstruct handlerConstruct,
-//            QPHttpRequest request, QPHttpResponse response)
-//            throws QPException {
-//        handlerConstruct.getRepoManager()
-//                .resolve(handlerConstruct.getHandlerName())
-//                .handle(handlerConstruct.getHandlerConfig(),
-//                        springContext,
-//                        request, response);
-//        response.apply();
-//    }
-
-    protected void invokeHttpHandler(
+    protected QPPrincipal authorizeHttpHandler(
             QPHandlerConstruct handlerConstruct,
             QPHttpRequest request, QPHttpResponse response)
             throws QPException {
+        if(authenticatorModule != null) {
+            QPHttpAuthenticator module = QPBaseModule
+                    .getModule(authenticatorModule, QPHttpAuthenticator.class);
+            QPHttpAuthenticated authenticate = module.authenticate(request);
+            if(authenticate != null)
+                authenticate.verifyRequiredRoles(
+                        handlerConstruct.getRoles().hashCode());
+            return authenticate.getPrincipal();
+        }
+
+        return null;
+    }
+
+    protected void invokeHttpHandler(QPPrincipal principal,
+                                     QPHandlerConstruct handlerConstruct,
+                                     QPHttpRequest request, QPHttpResponse response)
+            throws QPException {
         handlerConstruct.getRepoManager()
                 .resolve(handlerConstruct.getHandlerName())
-                .handle(handlerConstruct.getHandlerConfig(),
+                .handle(principal, handlerConstruct.getHandlerConfig(),
                         request, response);
         response.apply();
     }

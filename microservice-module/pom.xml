@@ -10,6 +10,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>microservice-module</artifactId>
-
-
+    <packaging>pom</packaging>
+    <modules>
+        <module>basic-authentication</module>
+    </modules>
 </project>
