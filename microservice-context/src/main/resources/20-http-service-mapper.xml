@@ -6,6 +6,7 @@
     <property name="qp-will-be-registered" value="true" />
 
     <qp-authenticator module-name="" />
+    <qp-authorizer module-name="" />
 
     <!--<qp-package name="p1"-->
                 <!--value="ir.piana.dev.microservice.module.servicemapper"/>-->

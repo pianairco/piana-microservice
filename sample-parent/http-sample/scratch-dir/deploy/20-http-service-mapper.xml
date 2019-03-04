@@ -6,6 +6,7 @@
     <property name="qp-will-be-registered" value="true" />
 
     <qp-authenticator module-name="basic-authenticator" />
+    <qp-authorizer module-name="basic-authorizer" />
 
     <qp-spring-context>default</qp-spring-context>
 

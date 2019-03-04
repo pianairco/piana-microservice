@@ -2,11 +2,14 @@ package ir.piana.dev.microservice.context.http;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import ir.piana.dev.microservice.context.authorize.BasicRoleProvidable;
+import ir.piana.dev.microservice.context.authorize.QPRoleManagerModule;
 import ir.piana.dev.microservice.context.http.construct.QPHandlerConstruct;
 import ir.piana.dev.microservice.context.http.construct.QPRepositoryConstruct;
 import ir.piana.dev.microservice.context.http.util.QPHttpInjectableConfigImpl;
 import ir.piana.dev.microservice.core.QPException;
 import ir.piana.dev.microservice.core.authenticate.QPPrincipal;
+import ir.piana.dev.microservice.core.authorize.QPRoleProvidable;
 import ir.piana.dev.microservice.core.http.*;
 import ir.piana.dev.microservice.core.module.QPBaseModule;
 import org.jdom2.Element;
@@ -14,10 +17,13 @@ import org.jpos.q2.QBean;
 import org.jpos.space.SpaceListener;
 import org.jpos.transaction.Context;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class QPHttpServiceMapperModule
         extends QPBaseModule
@@ -31,7 +37,8 @@ public class QPHttpServiceMapperModule
             new LinkedHashMap<>();
 
 //    protected QPHttpAuthenticator authenticator;
-    protected String authenticatorModule;
+    protected String authenticatorModuleName;
+    protected String authorizerModuleName;
 
     protected ExecutorService listener;
     protected ExecutorService worker;
@@ -171,8 +178,12 @@ public class QPHttpServiceMapperModule
         springContextName = getPersist().getChildText("qp-spring-context");
         springContextName = springContextName == null ?
                 "default" : springContextName;
-        authenticatorModule = getPersist()
+        authenticatorModuleName = getPersist()
                 .getChild("qp-authenticator")
+                .getAttributeValue("module-name");
+
+        authorizerModuleName = getPersist()
+                .getChild("qp-authorizer")
                 .getAttributeValue("module-name");
 
         for(Element repoElement :
@@ -206,37 +217,56 @@ public class QPHttpServiceMapperModule
             }
         }
 
-        getPersist().getChildren("qp-handler")
-                .parallelStream().forEach(handlerElement -> {
-            QPHandlerConstruct handlerConstruct = new QPHandlerConstruct();
-            String url = handlerElement.getAttributeValue("url");
-            handlerConstruct.setMethod(handlerElement.getAttributeValue("method"));
-            handlerConstruct.setRoles(handlerElement.getAttributeValue("roles"));
-            String repoName = handlerElement.getAttributeValue("repository");
-            handlerConstruct.setRepoManager(repositoryManagerMap.get(repoName));
-            String handlerName = handlerElement.getAttributeValue("handler");
-            handlerConstruct.setHandlerName(handlerName);
+        QPRoleManagerModule roleManagerModule;
+        if(authorizerModuleName != null) {
+            roleManagerModule = QPBaseModule
+                    .getModule(authorizerModuleName, QPRoleManagerModule.class);
 
-            handlerConstruct.setHandlerConfig(QPHttpInjectableConfigImpl
-                    .build(handlerElement.getChildren("property")));
+            getPersist().getChildren("qp-handler")
+                    .parallelStream().forEach(handlerElement -> {
+                QPHandlerConstruct handlerConstruct = new QPHandlerConstruct();
+                String url = handlerElement.getAttributeValue("url");
+                handlerConstruct.setMethod(handlerElement.getAttributeValue("method"));
+                handlerConstruct.setRoles(handlerElement.getAttributeValue("roles"));
+                List<QPRoleProvidable> roleProvidables = Arrays.stream(handlerConstruct.getRoles().split(","))
+                        .map(role -> new BasicRoleProvidable(role))
+                        .collect(Collectors.toList());
+                handlerConstruct.setRoleProvidables(roleProvidables);
+                String repoName = handlerElement.getAttributeValue("repository");
+                handlerConstruct.setRepoManager(repositoryManagerMap.get(repoName));
+                String handlerName = handlerElement.getAttributeValue("handler");
+                handlerConstruct.setHandlerName(handlerName);
 
-            if (url.contains("**")) {
-                handlerConstruct.setUrl(url.substring(
-                        0, url.indexOf("/**")));
-                httpAsteriskHandlerConstructMap.put(
-                        handlerConstruct.getMethod()
-                                .concat(":")
-                                .concat(url.substring(0, url.indexOf("/**"))),
-                        handlerConstruct);
-            } else {
-                handlerConstruct.setUrl(url);
-                handlerConstructMap.put(
-                        handlerConstruct.getMethod()
-                                .concat(":")
-                                .concat(handlerConstruct.getUrl()),
-                        handlerConstruct);
-            }
-        });
+                handlerConstruct.setHandlerConfig(QPHttpInjectableConfigImpl
+                        .build(handlerElement.getChildren("property")));
+
+                if (url.contains("**")) {
+                    handlerConstruct.setUrl(url.substring(
+                            0, url.indexOf("/**")));
+                    httpAsteriskHandlerConstructMap.put(
+                            handlerConstruct.getMethod()
+                                    .concat(":")
+                                    .concat(url.substring(0, url.indexOf("/**"))),
+                            handlerConstruct);
+                } else {
+                    handlerConstruct.setUrl(url);
+                    handlerConstructMap.put(
+                            handlerConstruct.getMethod()
+                                    .concat(":")
+                                    .concat(handlerConstruct.getUrl()),
+                            handlerConstruct);
+                }
+
+                if (roleManagerModule != null) {
+                    try {
+                        handlerConstruct.setRolesId(roleManagerModule.createRolesId(
+                                handlerConstruct.getRoleProvidables()));
+                    } catch (QPException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
     }
 
     @Override
@@ -305,11 +335,13 @@ public class QPHttpServiceMapperModule
                 }
             }
             if(handlerConstruct != null) {
-                QPPrincipal qpPrincipal = authorizeHttpHandler(
+                QPHttpAuthenticated qpHttpAuthenticated = authenticateHttpHandler(
                         handlerConstruct,
                         request, response);
+                if(handlerConstruct.getRolesId() > 0)
+                    authorizeHttpHandler(handlerConstruct, qpHttpAuthenticated);
 
-                invokeHttpHandler(qpPrincipal,
+                invokeHttpHandler(qpHttpAuthenticated.getPrincipal(),
                         handlerConstruct,
                         request, response);
             } else {
@@ -328,21 +360,41 @@ public class QPHttpServiceMapperModule
         }
     }
 
-    protected QPPrincipal authorizeHttpHandler(
+    protected QPHttpAuthenticated authenticateHttpHandler(
             QPHandlerConstruct handlerConstruct,
             QPHttpRequest request, QPHttpResponse response)
             throws QPException {
-        if(authenticatorModule != null) {
+        if(authenticatorModuleName != null) {
             QPHttpAuthenticator module = QPBaseModule
-                    .getModule(authenticatorModule, QPHttpAuthenticator.class);
-            QPHttpAuthenticated authenticate = module.authenticate(request);
-            if(authenticate != null)
-                authenticate.verifyRequiredRoles(
-                        handlerConstruct.getRoles().hashCode());
-            return authenticate.getPrincipal();
+                    .getModule(authenticatorModuleName, QPHttpAuthenticator.class);
+            QPHttpAuthenticated authenticated = module.authenticate(request);
+            return authenticated;
         }
-
         return null;
+    }
+
+    protected boolean authorizeHttpHandler(
+            QPHandlerConstruct handlerConstruct,
+            QPHttpAuthenticated authenticated)
+            throws QPException {
+        if(authenticated != null) {
+            if (authorizerModuleName != null) {
+                QPRoleManagerModule roleManagerModule = QPBaseModule
+                        .getModule(authorizerModuleName,
+                                QPRoleManagerModule.class);
+                if (!roleManagerModule.isRegistered(
+                        authenticated.getPrincipal()))
+                    roleManagerModule.registerPrincipalRoles(
+                            authenticated.getPrincipal(),
+                            authenticated.getAuthenticatedRoles());
+                long l = roleManagerModule.hasAnyRole(
+                        authenticated.getPrincipal(),
+                        handlerConstruct.getRolesId());
+                if(l > 0)
+                    return true;
+            }
+        }
+        return false;
     }
 
     protected void invokeHttpHandler(QPPrincipal principal,

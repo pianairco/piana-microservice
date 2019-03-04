@@ -1,7 +1,9 @@
 package ir.piana.dev.microservice.module.basicauth;
 
+import ir.piana.dev.microservice.context.authorize.BasicRoleProvidable;
 import ir.piana.dev.microservice.core.authenticate.QPPrincipalEntity;
 import ir.piana.dev.microservice.core.authenticate.QPPrincipal;
+import ir.piana.dev.microservice.core.authorize.QPRoleProvidable;
 import ir.piana.dev.microservice.core.http.QPHttpAuthenticated;
 import ir.piana.dev.microservice.core.http.QPHttpAuthenticator;
 import ir.piana.dev.microservice.core.http.QPHttpRequest;
@@ -10,7 +12,10 @@ import ir.piana.dev.microservice.module.basicauth.entity.BasicUserEntity;
 import ir.piana.dev.microservice.module.basicauth.repo.UserRepository;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Mohammad Rahmati, 2/23/2019
@@ -82,9 +87,14 @@ public class BasicAuthenticationModule
     static class BasicHttpAuthenticated
             implements QPHttpAuthenticated {
         private QPPrincipalEntity userEntity;
+        private List<QPRoleProvidable> roleProvidables;
 
         public BasicHttpAuthenticated(BasicUserEntity userEntity) {
             this.userEntity = userEntity;
+            this.roleProvidables = Arrays.stream(
+                    userEntity.getRoles().split(","))
+                    .map(role -> new BasicRoleProvidable(role))
+                    .collect(Collectors.toList());
         }
 
         public QPPrincipal getPrincipal() {
@@ -97,13 +107,8 @@ public class BasicAuthenticationModule
 //        }
 
         @Override
-        public long getAuthenticatedRoles() {
-            return 0;
-        }
-
-        @Override
-        public boolean verifyRequiredRoles(long requiredRoles) {
-            return true;
+        public List<QPRoleProvidable> getAuthenticatedRoles() {
+            return this.roleProvidables;
         }
     }
 }

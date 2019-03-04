@@ -1,7 +1,10 @@
 package ir.piana.dev.microservice.context.http.construct;
 
+import ir.piana.dev.microservice.core.authorize.QPRoleProvidable;
 import ir.piana.dev.microservice.core.http.QPHttpInjectableConfig;
 import ir.piana.dev.microservice.core.http.QPHttpRepositoryManager;
+
+import java.util.List;
 
 /**
  * @author Mohammad Rahmati, 2/16/2019
@@ -11,6 +14,8 @@ public class QPHandlerConstruct {
     private String url;
     private String method;
     private String roles;
+    private Long rolesId;
+    private List<QPRoleProvidable> roleProvidables;
     private QPHttpRepositoryManager repoManager;
     private QPHttpInjectableConfig handlerConfig;
 
@@ -63,5 +68,21 @@ public class QPHandlerConstruct {
 
     public void setRepoManager(QPHttpRepositoryManager repoManager) {
         this.repoManager = repoManager;
+    }
+
+    public List<QPRoleProvidable> getRoleProvidables() {
+        return roleProvidables;
+    }
+
+    public void setRoleProvidables(List<QPRoleProvidable> roleProvidables) {
+        this.roleProvidables = roleProvidables;
+    }
+
+    public Long getRolesId() {
+        return rolesId;
+    }
+
+    public void setRolesId(Long rolesId) {
+        this.rolesId = rolesId;
     }
 }
